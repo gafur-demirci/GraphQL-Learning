@@ -6,7 +6,9 @@ const {authors, books} = require('./data');
 
 // data nın tiplerini tanımlama
 const typeDefs = gql`
-
+    type DeleteAllOutput {
+        count : Int!
+    }
     # Author
     type Author {
         id : ID!
@@ -63,10 +65,14 @@ const typeDefs = gql`
         # Author
         createAuthor(data: CreateAuhtorInput!): Author!
         updateAuthor(id: ID!, data : UpdateAuthorInput!) : Author!
+        deleteAuthor(id: ID!) : Author!
+        deleteAllAuthors : DeleteAllOutput!
 
         # Book
         createBook(data: CreateBookInput! ): Book!
         updateBook(id: ID!, data: UpdateBookInput!): Book!
+        deleteBook(id: ID!) : Book!
+        deleteAllBooks : DeleteAllOutput!
     }
 
 `;
@@ -97,6 +103,22 @@ const resolvers = {
             authors[author_index].age = data.age;
             return authors[author_index];
         },
+        deleteAuthor : (parent, { id }) => {
+            const author_index = authors.findIndex(author => author.id === id);
+            if (author_index === -1) {
+                throw new Error('Author not found');
+            }
+            const deleted_author = authors[author_index];
+            authors.splice(author_index,1)
+            return deleted_author;
+        },
+        deleteAllAuthors : () => {
+            const length = authors.length;
+            authors.splice(0,length);
+            return {
+                count : length,
+            }
+        },
         // Book
         createBook : (parent,{data : {title, author_id, score, isPublished}}) => {
             const book = {
@@ -126,6 +148,22 @@ const resolvers = {
             books[book_index].isPublished = data.isPublished;
             return books[book_index]; 
             */
+        },
+        deleteBook : (parent, {id}) => {    
+            const book_index = books.findIndex(book => book.id === id);
+            if (book_index === -1) {
+                throw new Error('Book not found');
+            }
+            const deleted_book = books[book_index];
+            books.splice(book_index,1)
+            return deleted_book;
+        },
+        deleteAllBooks : () => {
+            const length = books.length;
+            books.splice(0,length);
+            return {
+                count : length,
+            }
         }
     },
     Query: {
